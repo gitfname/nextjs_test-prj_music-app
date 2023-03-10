@@ -4,11 +4,15 @@ import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import { AuthOptions } from "../api/auth/[...nextauth]"
 import Image from "next/image"
+import getUserProfileImage from "@/lib/getUserProfileImage"
 
 export async function getServerSideProps(ctx) {
   const session = await getServerSession(ctx.req, ctx.res, AuthOptions)
 
   const { data } = await spbase.from("user").select().eq("provider-account-id", session.userId).single()
+
+  // get profile image
+  const userImageUrl = await getUserProfileImage(session)
 
   return {
     props: {
@@ -18,7 +22,8 @@ export async function getServerSideProps(ctx) {
         "last-name": data["last-name"],
         "bio": data["bio"],
         "hide-profile-picture": data["hide-profile-picture"],
-        "hide-email": data["hide-email"]
+        "hide-email": data["hide-email"],
+        "image": userImageUrl
       }
     }
   }
@@ -32,7 +37,8 @@ function edit({userData}) {
   const showEmailRef = useRef(null)
   const hideProfilePictureref = useRef(null)
   const [loadingSubmition, setLoadingSubmition] = useState(false)
-  
+  const [profileImageSrc, setProfileImageSrc] = useState(userData?.image||"")
+
   async function submitChanges() {
     if(loadingSubmition) return
     
@@ -58,6 +64,47 @@ function edit({userData}) {
     setLoadingSubmition(false)
   }
 
+  function toBase64(file) {
+    return new Promise(resolve => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result)
+    })
+  }
+  
+  async function handleChangeProfilePicture(e) {
+    if(e.target.files.length === 0) return
+
+    const file = e.target.files[0]
+
+    const formData = new FormData()
+    formData.append("file", await toBase64(file))
+    formData.append("file-name", file.name)
+    formData.append("file-type", file.type)
+    formData.append("file-size", file.size)
+    
+    const res = await fetch("/api/users/image",{
+      method: "POST",
+      body: formData
+    })
+
+    const resData = await res.json()
+
+    setProfileImageSrc(resData["image-url"])
+
+    console.log(resData)
+  }
+
+ async function handleRemoveUserProfile() {
+    const res = await fetch("/api/users/remove")
+    const resJson = await res.json()
+
+    const getProfileRes = await fetch("/api/users/get-image-url")
+    const getProfileJson = await getProfileRes.json()
+    console.log(getProfileJson);
+    setProfileImageSrc(getProfileJson.message)
+  }
+
   return (
     <div className="w-full h-screen bg-slate-800 grid place-items-center">
 
@@ -74,22 +121,24 @@ function edit({userData}) {
               <div className="flex-1 border-b border-b-black/[0.085]"></div>
             </div>
             
-            <div className="flex items-center justify-center gap-x-3 mt-6">
+            <div className="flex items-center gap-x-3 mt-6">
 
               <Image
-                src={session?.user?.image}
+                alt="profile picture"
                 width={55}
                 height={55}
-                className="rounded-full"
+                src={profileImageSrc}
+                className="rounded-full min-w-[55px] min-h-[55px] max-w-[55px] max-h-[55px] object-center object-cover outline-emerald-500/60 outline outline-1 outline-offset-4"
               />
+
               {/* <div className="w-12 h-12 rounded-full bg-red-400 outline-emerald-500/40 outline outline-1 outline-offset-4"></div> */}
 
-              {/* <div className="flex items-center gap-x-2 ml-3">
-                <input onChange={handleChangeProfilePicture} accepttt="image/png, image/jpeg, image/webp" type="file" id="profile-picture-file-input" className="hidden" />
-                <button className="active:scale-95 transition-transform duration-200 py-1.5 px-3.5 rounded-full bg-[#1b6166] text-xs text-gray-100 border border-transparent">Change</button>
+              <div className="flex items-center gap-x-2 ml-3">
+                <input onChange={handleChangeProfilePicture} accepttt="image/jpg" type="file" id="profile-picture-file-input" className="hidden" />
+                {/* <button className="active:scale-95 transition-transform duration-200 py-1.5 px-3.5 rounded-full bg-[#1b6166] text-xs text-gray-100 border border-transparent">Change</button> */}
                 <label htmlFor="profile-picture-file-input" className="cursor-pointer active:scale-95 transition-transform duration-200 py-1.5 px-3.5 rounded-full bg-[#1b6166] text-xs text-gray-100 border border-transparent">Change</label>
-                <button className="active:scale-95 transition-transform duration-200  py-1.5 px-3.5 rounded-full bg-transparent text-xs text-[#1b6166] font-medium border border-[#1b6166]">Remove</button>
-              </div> */}
+                <button onClick={handleRemoveUserProfile} className="active:scale-95 transition-transform duration-200  py-1.5 px-3.5 rounded-full bg-transparent text-xs text-[#1b6166] font-medium border border-[#1b6166]">Remove</button>
+              </div>
 
             </div>
 

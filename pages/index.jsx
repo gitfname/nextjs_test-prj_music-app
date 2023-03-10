@@ -9,8 +9,22 @@ import Image from "next/image"
 import { FiLogOut } from "react-icons/fi"
 import { AiOutlineEdit, AiFillGithub } from "react-icons/ai"
 import { FcGoogle } from "react-icons/fc"
+import getUserProfileImage from "@/lib/getUserProfileImage"
+import { getServerSession } from "next-auth"
+import { AuthOptions } from "./api/auth/[...nextauth]"
 
-export default function HomePage() {
+export async function getServerSideProps(ctx) {
+  const session = await getServerSession(ctx.req, ctx.res, AuthOptions)
+  const profileImage = session ? await getUserProfileImage(session) : ""
+
+  return {
+    props: {
+      profileImage
+    }
+  }
+}
+
+export default function HomePage({profileImage}) {
   const { data: session } = useSession()
 
   return (
@@ -25,7 +39,7 @@ export default function HomePage() {
             <>
               <div className="dropdown dropdown-right dropdown-bottom">
                 <label tabIndex={0}>
-                  <Image alt="" src={session.user.image} width={33} height={33} className="rounded-full cursor-pointer" />
+                  <Image alt="" src={profileImage} width={33} height={33} className="rounded-full cursor-pointer min-w-[33px] min-h-[33px] max-w-[33px] max-h-[33px] object-center object-cover" />
                 </label>
                 <ul tabIndex={0} className="dropdown-content menu px-1 py-2 shadow bg-slate-800 rounded space-y-1 w-52 -translate-x-10 translate-y-2">
                   <li>
