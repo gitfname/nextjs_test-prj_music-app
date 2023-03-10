@@ -47,7 +47,7 @@ function edit({userData}) {
       "user-id": session.userId
     }
 
-    await fetch("http://localhost:3000/api/users/edit",{
+    await fetch("/api/users/edit",{
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -87,7 +87,7 @@ function edit({userData}) {
     //   })
     // })
 
-    const res = await fetch("http://localhost:3000/api/users/image",{
+    const res = await fetch("/api/users/image",{
       method: "POST",
       body: formData
     })
