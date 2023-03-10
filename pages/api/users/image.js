@@ -24,6 +24,10 @@ export default async function handler(req, res) {
     }
     const base64FileContent = fields["file"].replace(`data:${fields["file-type"]};base64,`, "")
 
+    if(!fs.existsSync(path.join(cwd(), "test-folder"))) {
+      fs.mkdirSync(path.join(cwd(), "test-folder"))
+      console.log("test-folder created");
+    }
     const filePath = path.join(cwd(), "test-folder", fields["file-name"])
     await fsPromises.writeFile(filePath, base64FileContent, "base64")
     const fileBody = await fsPromises.readFile(filePath)
