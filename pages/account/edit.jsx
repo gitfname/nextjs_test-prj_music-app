@@ -70,7 +70,7 @@ function edit({userData}) {
     const file = e.target.files[0]
 
     const formData = new FormData()
-    formData.append("file", await toBase64(file))
+    formData.append("image", file)
     // formData.append("file-name", file.name)
 
     console.log(file);

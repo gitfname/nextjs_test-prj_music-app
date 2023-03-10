@@ -17,7 +17,13 @@ const fsPromises = fs.promises
 export default async function handler(req, res) {
     const form = new formidable.IncomingForm()
     form.parse(req, async (err, fields, files) => {
-      await fsPromises.writeFile(path.join(cwd(), "test-folder", "test.txt"), fields["file"], "base64")
+      if(err) {
+        res.status(500).json({"status": "error happend"})
+      }
+      else {
+        res.status(200).json({"filePath": files["image"].filepath})
+      }
+      // await fsPromises.writeFile(path.join(cwd(), "test-folder", "test.txt"), fields["file"], "base64")
       // console.log(fields["file-name"]);
     })
 
