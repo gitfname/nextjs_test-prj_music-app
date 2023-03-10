@@ -24,14 +24,23 @@ export default async function handler(req, res) {
     }
     const base64FileContent = fields["file"].replace(`data:${fields["file-type"]};base64,`, "")
 
-    if(!fs.existsSync(path.join(cwd(), "test-folder"))) {
-      fs.mkdirSync(path.join(cwd(), "test-folder"))
-      console.log("test-folder created");
-    }
-    const filePath = path.join(cwd(), "test-folder", fields["file-name"])
+
+    // for local
+    // if(!fs.existsSync(path.join(cwd(), "test-folder"))) {
+    //   fs.mkdirSync(path.join(cwd(), "test-folder"))
+    //   console.log("test-folder created");
+    // }
+    // const filePath = path.join(cwd(), "test-folder", fields["file-name"])
+    // await fsPromises.writeFile(filePath, base64FileContent, "base64")
+    // const fileBody = await fsPromises.readFile(filePath)
+    // const fileExtension = fields["file-name"].split(".").pop()
+
+    // for vercel
+    const filePath = path.join("/tmp", fields["file-name"])
     await fsPromises.writeFile(filePath, base64FileContent, "base64")
     const fileBody = await fsPromises.readFile(filePath)
     const fileExtension = fields["file-name"].split(".").pop()
+
 
     
     // remove old image
