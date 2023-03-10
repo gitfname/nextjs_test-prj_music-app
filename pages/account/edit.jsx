@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import { AuthOptions } from "../api/auth/[...nextauth]"
-import axios from "axios"
+import Image from "next/image"
 
 export async function getServerSideProps(ctx) {
   const session = await getServerSession(ctx.req, ctx.res, AuthOptions)
@@ -58,45 +58,6 @@ function edit({userData}) {
     setLoadingSubmition(false)
   }
 
-  function toBase64(file) {
-    return new Promise(resolve => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => resolve(reader.result)
-    })
-  }
-  
-  async function handleChangeProfilePicture(e) {
-    const file = e.target.files[0]
-
-    const formData = new FormData()
-    formData.append("image", file)
-    // formData.append("file-name", file.name)
-
-    console.log(file);
-
-    // const base64File = await toBase64(file)
-
-    // const res = await fetch("http://localhost:3000/api/users/image",{
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     "file-content": base64File,
-    //     "file-name": file.name,
-    //     "file-size": file.size,
-    //     "file-type": file.type
-    //   })
-    // })
-
-    const res = await fetch("/api/users/image",{
-      method: "POST",
-      body: formData
-    })
-
-    const resData = await res.json()
-
-    console.log(resData)
-  }
-
   return (
     <div className="w-full h-screen bg-slate-800 grid place-items-center">
 
@@ -113,16 +74,22 @@ function edit({userData}) {
               <div className="flex-1 border-b border-b-black/[0.085]"></div>
             </div>
             
-            <div className="flex items-center gap-x-3 mt-6">
+            <div className="flex items-center justify-center gap-x-3 mt-6">
 
-              <div className="w-12 h-12 rounded-full bg-red-400 outline-emerald-500/40 outline outline-1 outline-offset-4"></div>
+              <Image
+                src={session?.user?.image}
+                width={55}
+                height={55}
+                className="rounded-full"
+              />
+              {/* <div className="w-12 h-12 rounded-full bg-red-400 outline-emerald-500/40 outline outline-1 outline-offset-4"></div> */}
 
-              <div className="flex items-center gap-x-2 ml-3">
+              {/* <div className="flex items-center gap-x-2 ml-3">
                 <input onChange={handleChangeProfilePicture} accepttt="image/png, image/jpeg, image/webp" type="file" id="profile-picture-file-input" className="hidden" />
-                {/* <button className="active:scale-95 transition-transform duration-200 py-1.5 px-3.5 rounded-full bg-[#1b6166] text-xs text-gray-100 border border-transparent">Change</button> */}
+                <button className="active:scale-95 transition-transform duration-200 py-1.5 px-3.5 rounded-full bg-[#1b6166] text-xs text-gray-100 border border-transparent">Change</button>
                 <label htmlFor="profile-picture-file-input" className="cursor-pointer active:scale-95 transition-transform duration-200 py-1.5 px-3.5 rounded-full bg-[#1b6166] text-xs text-gray-100 border border-transparent">Change</label>
                 <button className="active:scale-95 transition-transform duration-200  py-1.5 px-3.5 rounded-full bg-transparent text-xs text-[#1b6166] font-medium border border-[#1b6166]">Remove</button>
-              </div>
+              </div> */}
 
             </div>
 
